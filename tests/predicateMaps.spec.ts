@@ -1,5 +1,5 @@
-import { SchemaType } from "src/types";
-import { fromPredicateMap, toPredicateMap } from "src/util";
+import { SchemaType } from "../src/types";
+import { fromPredicateMap, toPredicateMap } from "../src/util";
 import {
     User,
     gymPredicateMap,

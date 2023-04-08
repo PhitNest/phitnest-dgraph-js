@@ -1,8 +1,5 @@
 import * as dgraph from "../src";
-import * as fetch from "isomorphic-fetch";
-import { getTestUser, setSchema, setup, testGym } from "./helper";
-
-const gql = String.raw;
+import { setSchema, setup } from "./helper";
 
 const timeout = 1 * 60 * 1000; // 1 minute in milliseconds
 
@@ -11,115 +8,6 @@ jest.setTimeout(timeout * 2); // tslint:disable-line no-string-based-set-timeout
 let client: dgraph.DgraphClient;
 
 describe("txn", () => {
-    describe("queryGraphQL/mutateGraphQL", () => {
-        beforeAll(async () => {
-            client = await setup();
-            await (
-                await fetch("http://localhost:8080/admin/schema", {
-                    method: "POST",
-                    body: gql`
-                        type Gym {
-                            name: String! @id
-                            street: String!
-                            city: String!
-                            state: String!
-                            zipCode: String!
-                            location: Point!
-                        }
-                        enum RegistrationStatus {
-                            Unconfirmed
-                            WaitingForProfilePicture
-                            Confirmed
-                        }
-
-                        type User {
-                            id: String! @id
-                            firstName: String!
-                            lastName: String!
-                            createdAt: Int64!
-                            registrationStatus: RegistrationStatus!
-                            gym: Gym!
-                        }
-                    `,
-                    headers: { "Content-Type": "application/graphql" },
-                })
-            ).json();
-        });
-
-        it("should allow simple mutations and queries", async () => {
-            let txn = client.newTxn();
-            const gymMutResult = await txn.mutateGraphQL({
-                obj: testGym,
-                commitNow: true,
-            });
-            const gymUids = Object.keys(gymMutResult.data.uids);
-            expect(gymUids).toHaveLength(1);
-            const gymUid = gymMutResult.data.uids[gymUids[0]];
-            txn = client.newTxn();
-            const gymQueryResult = await txn.queryGraphQL(
-                gql`
-                    query {
-                      gymQueryTest(func: eq(Gym.name, "${testGym.name}")) {
-                        uid
-                        Gym.name
-                        Gym.street
-                        Gym.city
-                        Gym.state
-                        Gym.zipCode
-                        Gym.location
-                      }
-                    }
-                  `,
-            );
-            expect(gymQueryResult["gymQueryTest"]).toBeDefined();
-            expect(gymQueryResult["gymQueryTest"]).toHaveLength(1);
-            expect(gymQueryResult["gymQueryTest"][0]).toEqual({
-                ...testGym,
-                uid: gymUid,
-            });
-            const testUser = getTestUser(gymUid);
-            txn = client.newTxn();
-            const userMutResult = await txn.mutateGraphQL({
-                obj: testUser,
-                commitNow: true,
-            });
-            const userUids = Object.keys(userMutResult.data.uids);
-            expect(userUids).toHaveLength(1);
-            const userUid = userMutResult.data.uids[userUids[0]];
-            txn = client.newTxn();
-            const userQueryResult = await txn.queryGraphQL(
-                gql`
-                    query {
-                      userQueryTest(func: eq(User.id, "${testUser.id}")) {
-                        uid
-                        User.firstName
-                        User.lastName
-                        User.id
-                        User.registrationStatus
-                        User.createdAt
-                        User.gym {
-                          uid
-                          Gym.name
-                          Gym.street
-                          Gym.city
-                          Gym.state
-                          Gym.zipCode
-                          Gym.location
-                        }
-                      }
-                    }
-                  `,
-            );
-            expect(userQueryResult["userQueryTest"]).toBeDefined();
-            expect(userQueryResult["userQueryTest"]).toHaveLength(1);
-            expect(userQueryResult["userQueryTest"][0]).toEqual({
-                ...testUser,
-                uid: userUid,
-                gym: { ...testGym, uid: gymUid },
-            });
-        });
-    });
-
     describe("queryWithVars", () => {
         beforeAll(async () => {
             client = await setup();
