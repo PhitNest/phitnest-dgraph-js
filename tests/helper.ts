@@ -84,8 +84,8 @@ export const gymPredicateMap = {
 };
 
 export enum RegistrationStatus {
-    Unconfirmed,
-    Confirmed,
+    Unconfirmed = "Unconfirmed",
+    Confirmed = "Confirmed",
 }
 
 export type User = {

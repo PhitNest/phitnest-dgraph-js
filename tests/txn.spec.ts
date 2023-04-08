@@ -15,7 +15,7 @@ describe("txn", () => {
             client = await setup();
             await setSchema(
                 client,
-                "<Gym.city>: string .\n<Gym.location>: geo .\n<Gym.name>: string @index(hash) @upsert .\n<Gym.state>: string .\n<Gym.street>: string .\n<Gym.zipCode>: string .\n<User.createdAt>: datetime .\n<User.firstName>: string .\n<User.gym>: uid .\n<User.id>: string @index(hash) @upsert .\n<User.lastName>: string .\n<User.registrationStatus>: string @index(hash) .\ntype <Gym> {\n    Gym.name\n    Gym.street\n    Gym.city\n    Gym.state\n    Gym.zipCode\n    Gym.location\n}\ntype <User> {\n    User.firstName\n    User.lastName\n    User.createdAt\n    User.registrationStatus\n}",
+                "<Gym.city>: string .\n<Gym.location>: geo .\n<Gym.name>: string @index(hash) @upsert .\n<Gym.state>: string .\n<Gym.street>: string .\n<Gym.zipCode>: string .\n<User.createdAt>: int .\n<User.firstName>: string .\n<User.gym>: uid .\n<User.id>: string @index(hash) @upsert .\n<User.lastName>: string .\n<User.registrationStatus>: string @index(hash) .\ntype <Gym> {\n    Gym.name\n    Gym.street\n    Gym.city\n    Gym.state\n    Gym.zipCode\n    Gym.location\n}\ntype <User> {\n    User.firstName\n    User.lastName\n    User.createdAt\n    User.registrationStatus\n}",
             );
         });
 
