@@ -35,5 +35,5 @@ jobs:
       run: bash ./scripts/install_dgraph.sh
     - name: run tests
       run: | 
-        npm ci --legacy-peer-deps
+        npm i
         bash ./scripts/build.sh
