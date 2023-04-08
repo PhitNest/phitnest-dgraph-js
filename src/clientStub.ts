@@ -187,7 +187,7 @@ export class DgraphClientStub {
 
     public mutate(mu: Mutation): Promise<Assigned> {
         let body: string;
-        let usingJSON: boolean = false;
+        let usingJSON = false;
         if (mu.setJson !== undefined || mu.deleteJson !== undefined) {
             usingJSON = true;
             const obj: { [k: string]: object } = {};
@@ -414,7 +414,7 @@ export class DgraphClientStub {
     /**
      * Gets instance or cluster health, based on the all param
      */
-    public async getHealth(all: boolean = false): Promise<Response> {
+    public async getHealth(all = false): Promise<Response> {
         return this.callAPI(`health${all ? "?all" : ""}`, {
             ...this.options,
             acceptRawText: true,

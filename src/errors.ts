@@ -24,13 +24,13 @@ export class CustomError extends Error {
         this.name = new.target.name;
 
         // fix the extended error prototype chain because typescript __extends implementation can't
-        const setPrototypeOf: Function = (<any>Object).setPrototypeOf;
+        const setPrototypeOf = (<any>Object).setPrototypeOf;
         setPrototypeOf !== undefined
             ? setPrototypeOf(this, new.target.prototype)
             : ((<any>this).__proto__ = new.target.prototype);
 
         // try to remove contructor from stack trace
-        const captureStackTrace: Function = (<any>Error).captureStackTrace;
+        const captureStackTrace = (<any>Error).captureStackTrace;
         if (captureStackTrace !== undefined) {
             captureStackTrace(this, this.constructor);
         }

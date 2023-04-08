@@ -7,7 +7,7 @@ export interface Operation {
 }
 
 export interface Payload {
-    data: {};
+    data: Record<string, unknown>;
 }
 
 export interface Request {
@@ -22,7 +22,7 @@ export interface Request {
 }
 
 export interface Response {
-    data: {};
+    data: Record<string, unknown>;
     extensions: Extensions;
 }
 

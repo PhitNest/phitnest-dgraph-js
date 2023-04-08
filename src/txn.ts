@@ -1,11 +1,18 @@
 import { DgraphClient } from "./client";
-import { ERR_ABORTED, ERR_BEST_EFFORT_REQUIRED_READ_ONLY, ERR_FINISHED } from "./errors";
-import { Assigned, Mutation, Request, Response, TxnContext, TxnOptions } from "./types";
 import {
-    isAbortedError,
-    isConflictError,
-    stringifyMessage,
-} from "./util";
+    ERR_ABORTED,
+    ERR_BEST_EFFORT_REQUIRED_READ_ONLY,
+    ERR_FINISHED,
+} from "./errors";
+import {
+    Assigned,
+    Mutation,
+    Request,
+    Response,
+    TxnContext,
+    TxnOptions,
+} from "./types";
+import { isAbortedError, isConflictError, stringifyMessage } from "./util";
 
 /**
  * Txn is a single atomic transaction.
@@ -24,24 +31,26 @@ import {
 export class Txn {
     private readonly dc: DgraphClient;
     private readonly ctx: TxnContext;
-    private finished: boolean = false;
-    private mutated: boolean = false;
+    private finished = false;
+    private mutated = false;
 
     constructor(dc: DgraphClient, options: TxnOptions = {}) {
         this.dc = dc;
 
         if (options.bestEffort && !options.readOnly) {
-            this.dc.debug("Client attempted to query using best-effort without setting the transaction to read-only");
+            this.dc.debug(
+                "Client attempted to query using best-effort without setting the transaction to read-only",
+            );
             throw ERR_BEST_EFFORT_REQUIRED_READ_ONLY;
         }
 
         this.ctx = {
-          start_ts: 0,
-          keys: [],
-          preds: [],
-          readOnly: options.readOnly,
-          bestEffort: options.bestEffort,
-          hash: "",
+            start_ts: 0,
+            keys: [],
+            preds: [],
+            readOnly: options.readOnly,
+            bestEffort: options.bestEffort,
+            hash: "",
         };
     }
 
@@ -64,7 +73,9 @@ export class Txn {
         options: { debug?: boolean } = {},
     ): Promise<Response> {
         if (this.finished) {
-            this.dc.debug(`Query request (ERR_FINISHED):\nquery = ${q}\nvars = ${vars}`);
+            this.dc.debug(
+                `Query request (ERR_FINISHED):\nquery = ${q}\nvars = ${vars}`,
+            );
             throw ERR_FINISHED;
         }
 
@@ -113,7 +124,11 @@ export class Txn {
      */
     public async mutate(mu: Mutation): Promise<Assigned> {
         if (this.finished) {
-            this.dc.debug(`Mutate request (ERR_FINISHED):\nmutation = ${stringifyMessage(mu)}`);
+            this.dc.debug(
+                `Mutate request (ERR_FINISHED):\nmutation = ${stringifyMessage(
+                    mu,
+                )}`,
+            );
             throw ERR_FINISHED;
         }
 
@@ -146,7 +161,7 @@ export class Txn {
             // Transaction could be aborted(status.ABORTED) if commitNow was true, or server
             // could send a message that this mutation conflicts(status.FAILED_PRECONDITION)
             // with another transaction.
-            throw (isAbortedError(e) || isConflictError(e)) ? ERR_ABORTED : e;
+            throw isAbortedError(e) || isConflictError(e) ? ERR_ABORTED : e;
         }
     }
 
@@ -207,7 +222,9 @@ export class Txn {
         res.sort();
         // Filter unique in a sorted array.
         return res.filter(
-            (item: string, idx: number, arr: string[]) => idx === 0 || arr[idx - 1] !== item);
+            (item: string, idx: number, arr: string[]) =>
+                idx === 0 || arr[idx - 1] !== item,
+        );
     }
 
     private mergeContext(src?: TxnContext): void {
@@ -216,7 +233,7 @@ export class Txn {
             return;
         }
 
-        this.ctx.hash = src.hash ?? "" ;
+        this.ctx.hash = src.hash ?? "";
 
         if (this.ctx.start_ts === 0) {
             this.ctx.start_ts = src.start_ts;

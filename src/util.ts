@@ -1,6 +1,7 @@
 import { APIError, APIResultError } from "./errors";
 
-export function isAbortedError(error: any): boolean { // tslint:disable-line no-any
+export function isAbortedError(error: any): boolean {
+    // tslint:disable-line no-any
     if (!(error instanceof APIError)) {
         return false;
     }
@@ -14,7 +15,8 @@ export function isAbortedError(error: any): boolean { // tslint:disable-line no-
     return message.indexOf("abort") >= 0 && message.indexOf("retry") >= 0;
 }
 
-export function isConflictError(error: any): boolean { // tslint:disable-line no-any
+export function isConflictError(error: any): boolean {
+    // tslint:disable-line no-any
     if (!(error instanceof APIError)) {
         return false;
     }

@@ -9,8 +9,8 @@ import { stringifyMessage } from "./util";
  */
 export class DgraphClient {
     private readonly clients: DgraphClientStub[];
-    private debugMode: boolean = false;
-    private queryTimeout: number = 600;
+    private debugMode = false;
+    private queryTimeout = 600;
 
     /**
      * Creates a new Client for interacting with the Dgraph store.
@@ -115,7 +115,7 @@ export class DgraphClient {
      * setDebugMode switches on/off the debug mode which prints helpful debug messages
      * while performing alters, queries and mutations.
      */
-    public setDebugMode(mode: boolean = true): void {
+    public setDebugMode(mode = true): void {
         this.debugMode = mode;
     }
 
@@ -126,7 +126,7 @@ export class DgraphClient {
     /**
      * getHealth gets client or cluster health
      */
-    public async getHealth(all: boolean = true): Promise<Response> {
+    public async getHealth(all = true): Promise<Response> {
         return this.anyClient().getHealth(all);
     }
 
