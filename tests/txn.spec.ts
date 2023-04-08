@@ -1,5 +1,5 @@
 import * as dgraph from "../src";
-
+import * as fetch from "isomorphic-fetch";
 import { getTestUser, setSchema, setup, testGym } from "./helper";
 
 const gql = String.raw;
@@ -14,33 +14,36 @@ describe("txn", () => {
     describe("queryGraphQL/mutateGraphQL", () => {
         beforeAll(async () => {
             client = await setup();
-            await setSchema(
-                client,
-                gql`
-                    type Gym {
-                        name: String! @id
-                        street: String!
-                        city: String!
-                        state: String!
-                        zipCode: String!
-                        location: Point!
-                    }
-                    enum RegistrationStatus {
-                        Unconfirmed
-                        WaitingForProfilePicture
-                        Confirmed
-                    }
+            await (
+                await fetch("http://localhost:8080/admin/schema", {
+                    method: "POST",
+                    body: gql`
+                        type Gym {
+                            name: String! @id
+                            street: String!
+                            city: String!
+                            state: String!
+                            zipCode: String!
+                            location: Point!
+                        }
+                        enum RegistrationStatus {
+                            Unconfirmed
+                            WaitingForProfilePicture
+                            Confirmed
+                        }
 
-                    type User {
-                        id: String! @id
-                        firstName: String!
-                        lastName: String!
-                        createdAt: Int64!
-                        registrationStatus: RegistrationStatus!
-                        gym: Gym!
-                    }
-                `,
-            );
+                        type User {
+                            id: String! @id
+                            firstName: String!
+                            lastName: String!
+                            createdAt: Int64!
+                            registrationStatus: RegistrationStatus!
+                            gym: Gym!
+                        }
+                    `,
+                    headers: { "Content-Type": "application/graphql" },
+                })
+            ).json();
         });
 
         it("should allow simple mutations and queries", async () => {
