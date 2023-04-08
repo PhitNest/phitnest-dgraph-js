@@ -1,5 +1,7 @@
 import * as dgraph from "../src";
-import { setSchema, setup } from "./helper";
+import { getTestUser, setSchema, setup, testGym } from "./helper";
+
+const gql = String.raw;
 
 const timeout = 1 * 60 * 1000; // 1 minute in milliseconds
 
@@ -8,6 +10,89 @@ jest.setTimeout(timeout * 2); // tslint:disable-line no-string-based-set-timeout
 let client: dgraph.DgraphClient;
 
 describe("txn", () => {
+    describe("queryGraphQL/mutateGraphQL", () => {
+        beforeAll(async () => {
+            client = await setup();
+            await setSchema(
+                client,
+                "<Gym.city>: string .\n<Gym.location>: geo .\n<Gym.name>: string @index(hash) @upsert .\n<Gym.state>: string .\n<Gym.street>: string .\n<Gym.zipCode>: string .\n<User.createdAt>: datetime .\n<User.firstName>: string .\n<User.gym>: uid .\n<User.id>: string @index(hash) @upsert .\n<User.lastName>: string .\n<User.registrationStatus>: string @index(hash) .\ntype <Gym> {\n    Gym.name\n    Gym.street\n    Gym.city\n    Gym.state\n    Gym.zipCode\n    Gym.location\n}\ntype <User> {\n    User.firstName\n    User.lastName\n    User.createdAt\n    User.registrationStatus\n}",
+            );
+        });
+
+        it("should allow simple mutations and queries", async () => {
+            let txn = client.newTxn();
+            const gymMutResult = await txn.mutateGraphQL({
+                obj: testGym,
+                commitNow: true,
+            });
+            const gymUids = Object.keys(gymMutResult.data.uids);
+            expect(gymUids).toHaveLength(1);
+            const gymUid = gymMutResult.data.uids[gymUids[0]];
+            txn = client.newTxn();
+            const gymQueryResult = await txn.queryGraphQL(
+                gql`
+                    query {
+                      gymQueryTest(func: eq(Gym.name, "${testGym.name}")) {
+                        uid
+                        Gym.name
+                        Gym.street
+                        Gym.city
+                        Gym.state
+                        Gym.zipCode
+                        Gym.location
+                      }
+                    }
+                  `,
+            );
+            expect(gymQueryResult["gymQueryTest"]).toBeDefined();
+            expect(gymQueryResult["gymQueryTest"]).toHaveLength(1);
+            expect(gymQueryResult["gymQueryTest"][0]).toEqual({
+                ...testGym,
+                uid: gymUid,
+            });
+            const testUser = getTestUser(gymUid);
+            txn = client.newTxn();
+            const userMutResult = await txn.mutateGraphQL({
+                obj: testUser,
+                commitNow: true,
+            });
+            const userUids = Object.keys(userMutResult.data.uids);
+            expect(userUids).toHaveLength(1);
+            const userUid = userMutResult.data.uids[userUids[0]];
+            txn = client.newTxn();
+            const userQueryResult = await txn.queryGraphQL(
+                gql`
+                    query {
+                      userQueryTest(func: eq(User.id, "${testUser.id}")) {
+                        uid
+                        User.firstName
+                        User.lastName
+                        User.id
+                        User.registrationStatus
+                        User.createdAt
+                        User.gym {
+                          uid
+                          Gym.name
+                          Gym.street
+                          Gym.city
+                          Gym.state
+                          Gym.zipCode
+                          Gym.location
+                        }
+                      }
+                    }
+                  `,
+            );
+            expect(userQueryResult["userQueryTest"]).toBeDefined();
+            expect(userQueryResult["userQueryTest"]).toHaveLength(1);
+            expect(userQueryResult["userQueryTest"][0]).toEqual({
+                ...testUser,
+                uid: userUid,
+                gym: { ...testGym, uid: gymUid },
+            });
+        });
+    });
+
     describe("queryWithVars", () => {
         beforeAll(async () => {
             client = await setup();
