@@ -61,9 +61,9 @@ export class APIError extends CustomError {
  * HTTPError used for errors in the HTTP protocol (HTTP 404, HTTP 500, etc.)
  */
 export class HTTPError extends CustomError {
-    public readonly errorResponse: Response;
+    public readonly errorResponse: { status: number };
 
-    constructor(response: Response) {
+    constructor(response: { status: number }) {
         super(`Invalid status code = ${response.status}`);
         this.errorResponse = response;
     }

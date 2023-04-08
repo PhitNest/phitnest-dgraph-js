@@ -9,10 +9,17 @@ import {
     Mutation,
     Request,
     Response,
+    SchemaType,
     TxnContext,
     TxnOptions,
 } from "./types";
-import { isAbortedError, isConflictError, stringifyMessage } from "./util";
+import {
+    fromPredicateMap,
+    isAbortedError,
+    isConflictError,
+    stringifyMessage,
+    toPredicateMap,
+} from "./util";
 
 /**
  * Txn is a single atomic transaction.
@@ -52,6 +59,39 @@ export class Txn {
             bestEffort: options.bestEffort,
             hash: "",
         };
+    }
+
+    /**
+     * Allows for making mutations with simple types by converting the type information
+     * to a GQL query.
+     */
+    public mutateGraphQL<
+        T,
+        Relationships extends keyof T | undefined = undefined,
+    >(mutation: {
+        obj: SchemaType<T, Relationships>;
+        commitNow: boolean;
+    }): Promise<Assigned> {
+        return this.mutate({
+            setJson: toPredicateMap(mutation.obj),
+            commitNow: mutation.commitNow,
+        });
+    }
+
+    /**
+     * allows you to query the database using GraphQL syntax.
+     */
+    public async queryGraphQL(query: string): Promise<{ [k: string]: any[] }> {
+        return Object.fromEntries(
+            Object.entries((await this.query(query)).data as any).map(
+                ([key, value]) => [
+                    key,
+                    (value as { [k: string]: any }[]).map(predicateMap =>
+                        fromPredicateMap(predicateMap),
+                    ),
+                ],
+            ),
+        );
     }
 
     /**

@@ -99,3 +99,21 @@ export interface Config extends Options {
     acceptRawText?: boolean;
     body?: string;
 }
+
+export type WithTypename<T> = T & { __typename: string };
+
+export type WithRelationships<
+    T,
+    Relationships extends keyof T | undefined = undefined,
+> = Relationships extends keyof T
+    ? Omit<WithTypename<T>, Relationships> & {
+          [K in Relationships]: SchemaType<Partial<T[Relationships]>>;
+      }
+    : WithTypename<T>;
+
+export type SchemaType<
+    T,
+    Relationships extends keyof T | undefined = undefined,
+> =
+    | WithRelationships<T, Relationships>
+    | (WithRelationships<T, Relationships> & { uid: string });
