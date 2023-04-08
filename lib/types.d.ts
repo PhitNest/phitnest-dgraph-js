@@ -6,7 +6,7 @@ export interface Operation {
     dropAll?: boolean;
 }
 export interface Payload {
-    data: {};
+    data: Record<string, unknown>;
 }
 export interface Request {
     query: string;
@@ -21,7 +21,7 @@ export interface Request {
     hash?: string;
 }
 export interface Response {
-    data: {};
+    data: Record<string, unknown>;
     extensions: Extensions;
 }
 export interface UiKeywords {
@@ -88,3 +88,12 @@ export interface Config extends Options {
     acceptRawText?: boolean;
     body?: string;
 }
+export declare type WithTypename<T> = T & {
+    __typename: string;
+};
+export declare type WithRelationships<T, Relationships extends keyof T | undefined = undefined> = Relationships extends keyof T ? Omit<WithTypename<T>, Relationships> & {
+    [K in Relationships]: SchemaType<Partial<T[Relationships]>>;
+} : WithTypename<T>;
+export declare type SchemaType<T, Relationships extends keyof T | undefined = undefined> = WithRelationships<T, Relationships> | (WithRelationships<T, Relationships> & {
+    uid: string;
+});
