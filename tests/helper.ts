@@ -57,7 +57,7 @@ export type Gym = {
     };
 };
 
-export const testGym: dgraph.SchemaType<Gym> = {
+export const testGym: Gym = {
     __typename: "Gym",
     name: "Planet Fitness",
     street: "123 Main St",
@@ -71,7 +71,7 @@ export const testGym: dgraph.SchemaType<Gym> = {
     },
 };
 
-export const gymPredicateMap = {
+export const testGymPredicateMap: dgraph.PredicateMap<Gym> = {
     "Gym.name": testGym.name,
     "Gym.street": testGym.street,
     "Gym.city": testGym.city,
@@ -98,34 +98,13 @@ export type User = {
     gym: Gym;
 };
 
-const userFirstName = "John";
-const userLastName = "Doe";
-const userRegistrationStatus = RegistrationStatus.Unconfirmed;
-const userCreatedAt = Date.now();
-const userId = "1";
-
-export function getTestUser(gymUid: string): dgraph.SchemaType<User, "gym"> {
+export function getUserPredicateMap(gymUid: string): dgraph.PredicateMap<User> {
     return {
-        __typename: "User",
-        firstName: userFirstName,
-        lastName: userLastName,
-        id: userId,
-        registrationStatus: userRegistrationStatus,
-        createdAt: userCreatedAt,
-        gym: {
-            __typename: "Gym",
-            uid: gymUid,
-        },
-    };
-}
-
-export function getUserPredicateMap(gymUid: string) {
-    return {
-        "User.firstName": userFirstName,
-        "User.lastName": userLastName,
-        "User.id": userId,
-        "User.registrationStatus": userRegistrationStatus,
-        "User.createdAt": userCreatedAt,
+        "User.firstName": "John",
+        "User.lastName": "Doe",
+        "User.id": "1",
+        "User.registrationStatus": RegistrationStatus.Unconfirmed,
+        "User.createdAt": Date.now(),
         "User.gym": {
             uid: gymUid,
         },

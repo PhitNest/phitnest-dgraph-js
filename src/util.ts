@@ -1,32 +1,4 @@
 import { APIError, APIResultError } from "./errors";
-import { SchemaType } from "./types";
-
-function recursivePredicateMap(obj: any) {
-    const typename = obj.__typename;
-    if (typename) {
-        if (typename == "Point") {
-            return {
-                type: "Point",
-                coordinates: [obj.longitude, obj.latitude],
-            };
-        } else {
-            const transformedObj: { [k: string]: any } = {};
-            for (const [key, value] of Object.entries(obj)) {
-                if (key !== "__typename") {
-                    if (key === "uid") {
-                        transformedObj[key] = value;
-                    } else {
-                        transformedObj[`${typename}.${key}`] =
-                            recursivePredicateMap(value);
-                    }
-                }
-            }
-            return transformedObj;
-        }
-    } else {
-        return obj;
-    }
-}
 
 function recursiveReversePredicateMap(obj: any) {
     if (
@@ -85,17 +57,6 @@ function recursiveReversePredicateMap(obj: any) {
 
 export function fromPredicateMap(obj: { [k: string]: any }) {
     return recursiveReversePredicateMap(obj);
-}
-
-export function toPredicateMap<
-    T,
-    Relationships extends keyof T | undefined = undefined,
->(
-    obj: SchemaType<T, Relationships>,
-): {
-    [k: string]: any;
-} {
-    return recursivePredicateMap(obj);
 }
 
 export function isAbortedError(error: any): boolean {

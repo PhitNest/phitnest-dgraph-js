@@ -1,11 +1,10 @@
-import { PredicateMap } from "src";
 import { fromPredicateMap } from "../src/util";
 import {
-    User,
     testGym,
     RegistrationStatus,
     getUserPredicateMap,
     testGymPredicateMap,
+    User,
     Gym,
 } from "./helper";
 
@@ -40,14 +39,12 @@ describe("fromPredicateMap", () => {
             fromPredicateMap(invalidPredicateMap),
         ).rejects.toThrowError("Invalid typename");
     });
-});
 
-describe("fromPredicateMap", () => {
-    const gymUid = "0x1";
-    const userPredicateMap = getUserPredicateMap(gymUid);
-    it("fromPredicateMap", () => {
+    it("should convert basic types", () => {
+        const gymUid = "0x1";
+        const userPredicateMap = getUserPredicateMap(gymUid);
         expect(fromPredicateMap(testGymPredicateMap)).toEqual(testGym);
-        const userPredicateMapWithExtraGymData: PredicateMap<User> = {
+        const userPredicateMapWithExtraGymData = {
             ...userPredicateMap,
             "User.gym": { uid: gymUid, "Gym.name": testGym.name },
         };

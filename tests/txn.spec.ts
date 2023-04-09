@@ -1,5 +1,13 @@
 import * as dgraph from "../src";
-import { getTestUser, setSchema, setup, testGym } from "./helper";
+import {
+    Gym,
+    User,
+    getUserPredicateMap,
+    setSchema,
+    setup,
+    testGym,
+    testGymPredicateMap,
+} from "./helper";
 
 const gql = String.raw;
 
@@ -21,8 +29,8 @@ describe("txn", () => {
 
         it("should allow simple mutations and queries", async () => {
             let txn = client.newTxn();
-            const gymMutResult = await txn.mutateGraphQL({
-                obj: testGym,
+            const gymMutResult = await txn.mutateGraphQL<Gym>({
+                obj: testGymPredicateMap,
                 commitNow: true,
             });
             const gymUids = Object.keys(gymMutResult.data.uids);
@@ -50,10 +58,10 @@ describe("txn", () => {
                 ...testGym,
                 uid: gymUid,
             });
-            const testUser = getTestUser(gymUid);
+            const testUserPredicateMap = getUserPredicateMap(gymUid);
             txn = client.newTxn();
-            const userMutResult = await txn.mutateGraphQL({
-                obj: testUser,
+            const userMutResult = await txn.mutateGraphQL<User>({
+                obj: testUserPredicateMap,
                 commitNow: true,
             });
             const userUids = Object.keys(userMutResult.data.uids);
@@ -63,7 +71,7 @@ describe("txn", () => {
             const userQueryResult = await txn.queryGraphQL(
                 gql`
                     query {
-                      userQueryTest(func: eq(User.id, "${testUser.id}")) {
+                      userQueryTest(func: eq(User.id, "${testUserPredicateMap["User.id"]}")) {
                         uid
                         User.firstName
                         User.lastName
@@ -86,7 +94,13 @@ describe("txn", () => {
             expect(userQueryResult["userQueryTest"]).toBeDefined();
             expect(userQueryResult["userQueryTest"]).toHaveLength(1);
             expect(userQueryResult["userQueryTest"][0]).toEqual({
-                ...testUser,
+                __typename: "User",
+                firstName: testUserPredicateMap["User.firstName"],
+                lastName: testUserPredicateMap["User.lastName"],
+                id: testUserPredicateMap["User.id"],
+                registrationStatus:
+                    testUserPredicateMap["User.registrationStatus"],
+                createdAt: testUserPredicateMap["User.createdAt"],
                 uid: userUid,
                 gym: { ...testGym, uid: gymUid },
             });

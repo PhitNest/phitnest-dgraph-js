@@ -7,9 +7,9 @@ import {
 import {
     Assigned,
     Mutation,
+    PredicateMap,
     Request,
     Response,
-    SchemaType,
     TxnContext,
     TxnOptions,
 } from "./types";
@@ -18,7 +18,6 @@ import {
     isAbortedError,
     isConflictError,
     stringifyMessage,
-    toPredicateMap,
 } from "./util";
 
 /**
@@ -62,18 +61,14 @@ export class Txn {
     }
 
     /**
-     * Allows for making mutations with simple types by converting the type information
-     * to a GQL query.
+     * Enforces DQL predicate syntax for queries.
      */
-    public mutateGraphQL<
-        T,
-        Relationships extends keyof T | undefined = undefined,
-    >(mutation: {
-        obj: SchemaType<T, Relationships>;
+    public mutateGraphQL<T extends object>(mutation: {
+        obj: PredicateMap<T>;
         commitNow: boolean;
     }): Promise<Assigned> {
         return this.mutate({
-            setJson: toPredicateMap(mutation.obj),
+            setJson: mutation.obj,
             commitNow: mutation.commitNow,
         });
     }
