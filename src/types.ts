@@ -119,11 +119,11 @@ type RecursivePredicateMap<T extends string | number | Point | object> =
           }
         ? Omit<
               {
-                  [K in Keys as `${Typename}.${K}`]?: RecursivePredicateMap<
-                      T[K]
-                  >;
+                  [K in Keys as `${Typename}.${K}`]:
+                      | RecursivePredicateMap<T[K]>
+                      | undefined;
               } & {
-                  uid?: string;
+                  uid: string | undefined;
               },
               `${Typename}.__typename`
           >
