@@ -88,12 +88,20 @@ export interface Config extends Options {
     acceptRawText?: boolean;
     body?: string;
 }
-export declare type WithTypename<T> = T & {
-    __typename: string;
+export type Point = {
+    __typename?: "Point";
+    latitude: number;
+    longitude: number;
 };
-export declare type WithRelationships<T, Relationships extends keyof T | undefined = undefined> = Relationships extends keyof T ? Omit<WithTypename<T>, Relationships> & {
-    [K in Relationships]: SchemaType<Partial<T[Relationships]>>;
-} : WithTypename<T>;
-export declare type SchemaType<T, Relationships extends keyof T | undefined = undefined> = WithRelationships<T, Relationships> | (WithRelationships<T, Relationships> & {
-    uid: string;
-});
+type RecursivePredicateMap<T extends string | number | Point | object> = T extends string | number ? T : T extends Point ? {
+    type: "Point";
+    coordinates: [T["longitude"], T["latitude"]];
+} : T extends Record<Extract<keyof T, string>, any> & {
+    __typename: string;
+} ? keyof T extends string ? Omit<{
+    [K in keyof T as `${T["__typename"]}.${K}`]?: RecursivePredicateMap<T[K]>;
+} & {
+    uid?: string;
+}, `${T["__typename"]}.__typename`> : never : never;
+export type PredicateMap<T extends object> = RecursivePredicateMap<T>;
+export {};

@@ -114,19 +114,21 @@ type RecursivePredicateMap<T extends string | number | Point | object> =
               type: "Point";
               coordinates: [T["longitude"], T["latitude"]];
           }
-        : T extends Record<infer Keys extends Extract<keyof T, string>, any> & {
-              __typename: infer Typename extends string;
+        : T extends Record<Extract<keyof T, string>, any> & {
+              __typename: string;
           }
-        ? Omit<
-              {
-                  [K in Keys as `${Typename}.${K}`]:
-                      | RecursivePredicateMap<T[K]>
-                      | undefined;
-              } & {
-                  uid: string | undefined;
-              },
-              `${Typename}.__typename`
-          >
+        ? keyof T extends string
+            ? Omit<
+                  {
+                      [K in keyof T as `${T["__typename"]}.${K}`]?: RecursivePredicateMap<
+                          T[K]
+                      >;
+                  } & {
+                      uid?: string;
+                  },
+                  `${T["__typename"]}.__typename`
+              >
+            : never
         : never;
 
 export type PredicateMap<T extends object> = RecursivePredicateMap<T>;
