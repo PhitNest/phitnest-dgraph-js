@@ -63,22 +63,22 @@ export class Txn {
     /**
      * Enforces DQL predicate syntax for queries.
      */
-    public mutateGraphQL<T extends object>(mutation: {
+    public mutate<T extends object>(mutation: {
         obj: PredicateMap<T>;
         commitNow: boolean;
     }): Promise<Assigned> {
-        return this.mutate({
+        return this.mutateRaw({
             setJson: mutation.obj,
             commitNow: mutation.commitNow,
         });
     }
 
     /**
-     * allows you to query the database using GraphQL syntax.
+     * allows you to query the database using DQL syntax
      */
-    public async queryGraphQL(query: string): Promise<{ [k: string]: any[] }> {
+    public async query(query: string): Promise<{ [k: string]: any[] }> {
         return Object.fromEntries(
-            Object.entries((await this.query(query)).data as any).map(
+            Object.entries((await this.queryRaw(query)).data as any).map(
                 ([key, value]) => [
                     key,
                     (value as { [k: string]: any }[]).map(predicateMap =>
@@ -94,7 +94,10 @@ export class Txn {
      * need to be made in the same transaction, it's convenient to chain the method,
      * e.g. client.newTxn().query("...").
      */
-    public query(q: string, options?: { debug?: boolean }): Promise<Response> {
+    private queryRaw(
+        q: string,
+        options?: { debug?: boolean },
+    ): Promise<Response> {
         return this.queryWithVars(q, undefined, options);
     }
 
@@ -157,7 +160,7 @@ export class Txn {
      * If the mutation fails, then the transaction is discarded and all future
      * operations on it will fail.
      */
-    public async mutate(mu: Mutation): Promise<Assigned> {
+    private async mutateRaw(mu: Mutation): Promise<Assigned> {
         if (this.finished) {
             this.dc.debug(
                 `Mutate request (ERR_FINISHED):\nmutation = ${stringifyMessage(
