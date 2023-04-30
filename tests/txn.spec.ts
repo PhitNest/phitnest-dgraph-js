@@ -29,7 +29,7 @@ describe("txn", () => {
 
         it("should allow simple mutations and queries", async () => {
             let txn = client.newTxn();
-            const gymMutResult = await txn.mutateGraphQL<Gym>({
+            const gymMutResult = await txn.mutate<Gym>({
                 obj: testGymPredicateMap,
                 commitNow: true,
             });
@@ -37,7 +37,7 @@ describe("txn", () => {
             expect(gymUids).toHaveLength(1);
             const gymUid = gymMutResult.data.uids[gymUids[0]];
             txn = client.newTxn();
-            const gymQueryResult = await txn.queryGraphQL(
+            const gymQueryResult = await txn.query(
                 gql`
                     query {
                       gymQueryTest(func: eq(Gym.name, "${testGym.name}")) {
@@ -60,7 +60,7 @@ describe("txn", () => {
             });
             const testUserPredicateMap = getUserPredicateMap(gymUid);
             txn = client.newTxn();
-            const userMutResult = await txn.mutateGraphQL<User>({
+            const userMutResult = await txn.mutate<User>({
                 obj: testUserPredicateMap,
                 commitNow: true,
             });
@@ -68,7 +68,7 @@ describe("txn", () => {
             expect(userUids).toHaveLength(1);
             const userUid = userMutResult.data.uids[userUids[0]];
             txn = client.newTxn();
-            const userQueryResult = await txn.queryGraphQL(
+            const userQueryResult = await txn.query(
                 gql`
                     query {
                       userQueryTest(func: eq(User.id, "${testUserPredicateMap["User.id"]}")) {
@@ -111,7 +111,7 @@ describe("txn", () => {
         beforeAll(async () => {
             client = await setup();
             await setSchema(client, "name: string @index(exact) .");
-            await client.newTxn().mutate({
+            await client.newTxn().mutateRaw({
                 setJson: {
                     name: "Alice",
                 },
@@ -172,14 +172,14 @@ describe("txn", () => {
         it("should pass debug option to the server", async () => {
             client = await setup();
             const txn = client.newTxn();
-            await txn.mutate({
+            await txn.mutateRaw({
                 setJson: { name: "Alice" },
             });
             await txn.commit();
 
             const queryTxn = client.newTxn();
 
-            const resp = queryTxn.query("{ me(func: has(name)) { name }}", {
+            const resp = queryTxn.queryRaw("{ me(func: has(name)) { name }}", {
                 debug: true,
             });
 
@@ -201,7 +201,7 @@ describe("txn", () => {
             const txn = client.newTxn();
             await txn.commit();
 
-            const p = txn.mutate({
+            const p = txn.mutateRaw({
                 setJson: {
                     name: "Alice",
                 },
@@ -213,7 +213,7 @@ describe("txn", () => {
             const txn = client.newTxn();
 
             // There is an error in the mutation NQuad.
-            const p1 = txn.mutate({
+            const p1 = txn.mutateRaw({
                 setNquads: 'alice <name> "Alice" .',
             });
             await expect(p1).rejects.toBeDefined();
@@ -239,7 +239,7 @@ describe("txn", () => {
 
         it("should throw finished error after mutation with commitNow", async () => {
             const txn = client.newTxn();
-            await txn.mutate({
+            await txn.mutateRaw({
                 setJson: {
                     name: "Alice",
                 },
@@ -267,7 +267,7 @@ describe("txn", () => {
 
         it("should resolve and do nothing after mutation with commitNow", async () => {
             const txn = client.newTxn();
-            await txn.mutate({
+            await txn.mutateRaw({
                 setJson: {
                     name: "Alice",
                 },

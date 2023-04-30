@@ -94,7 +94,7 @@ export class Txn {
      * need to be made in the same transaction, it's convenient to chain the method,
      * e.g. client.newTxn().query("...").
      */
-    private queryRaw(
+    public queryRaw(
         q: string,
         options?: { debug?: boolean },
     ): Promise<Response> {
@@ -160,7 +160,7 @@ export class Txn {
      * If the mutation fails, then the transaction is discarded and all future
      * operations on it will fail.
      */
-    private async mutateRaw(mu: Mutation): Promise<Assigned> {
+    public async mutateRaw(mu: Mutation): Promise<Assigned> {
         if (this.finished) {
             this.dc.debug(
                 `Mutate request (ERR_FINISHED):\nmutation = ${stringifyMessage(
